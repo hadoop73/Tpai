@@ -30,13 +30,13 @@ ad = sqlContext.read.format('com.databricks.spark.csv') \
 
 train = sqlContext.read.format('com.databricks.spark.csv') \
     .options(header='true', charset="utf-8") \
-    .load('hdfs://192.168.1.118:9000/home/hadoop/dup/train.csv')
-
-train26 = sqlContext.read.format('com.databricks.spark.csv') \
-    .options(header='true', charset="utf-8") \
-    .load('hdfs://192.168.1.118:9000/home/hadoop/dup/train26.csv')
+    .load('hdfs://192.168.1.118:9000/home/hadoop/dup/train21all.csv')
 
 
+"""
+   由于对负样本进行了欠采样，在训练过程中，直接对类别特征使用 one-hot 会带来误差，
+考虑统计每个类别对于 label 的影响
+"""
 
 def adf(dd=None,col='',prefix=''):
     data1 = dd.filter("label=1").groupBy(col).count()
@@ -51,19 +51,14 @@ def adf(dd=None,col='',prefix=''):
     data.toPandas().to_csv('../data/ad/train_ad_{0}_{1}.csv'.format(col,prefix),index=None)
 
 d = train.join(ad,on='creativeID',how='left')
-d26 = train26.join(ad,on='creativeID',how='left')
 
 for col in ['adID','camgaignID','appID','appPlatform','advertiserID']:
     adf(d,col,prefix='all')
-    adf(d26,col,prefix='26')
-del d,d26
-
+del d
 
 user = sqlContext.read.format('com.databricks.spark.csv') \
     .options(header='true', charset="utf-8") \
     .load('hdfs://192.168.1.118:9000/home/hadoop/dup/user.csv')
-
-
 
 def userDummy(dd=None,col='',prefix=''):
     data1 = dd.filter("label=1").groupBy(col).count()
@@ -73,18 +68,14 @@ def userDummy(dd=None,col='',prefix=''):
 
     data = data0.join(data1,on=col,how='outer')
     data = data.fillna(0)
-
     print data.show()
-
     data.toPandas().to_csv('../data/user/train_user_{}_{}.csv'.format(col,prefix),index=None)
 
 d = train.join(user,on='userID',how='left')
-d26 = train26.join(user,on='userID',how='left')
 
 for col in ['gender','education','marriageStatus',
             'haveBaby']:
     userDummy(d,col,prefix='all')
-    userDummy(d26,col,prefix='26')
 
 
 
