@@ -4,14 +4,16 @@
 import pandas as pd
 
 
-data = pd.read_csv('../data/dup/train21all_ad_user.csv')
+#data = pd.read_csv('../data/dup/train21all_ad_user.csv')
+data = pd.read_csv('../data/dup/train21test_ad_user.csv')
 
 for col in ['gender','education','marriageStatus','connectionType','telecomsOperator',
             'haveBaby','appID','appPlatform','advertiserID']:
     t = pd.get_dummies(data[col],prefix=col)
     data = data.join(t)
 
-cols = ['userID','gender','education','marriageStatus','conversionTime','positionID','hometown',
+# 'conversionTime',
+cols = ['userID','gender','education','marriageStatus','positionID','hometown',
         'haveBaby','creativeID','adID','camgaignID','appID','appPlatform','advertiserID','residence',
         'connectionType','telecomsOperator']
 
@@ -30,7 +32,7 @@ d = pd.concat(d+[t])
 
 d.drop('clickTime',axis=1,inplace=True)
 d.fillna(-10,inplace=True)
-d.to_csv('../data/dup/train_fea{}.csv'.format(21),index=None)
+#d.to_csv('../data/dup/train_fea{}.csv'.format(21),index=None)
 print d.head()
 print "train{} size:".format(21),d.shape
 
@@ -46,7 +48,9 @@ valid.loc[:,'label'] = vd.loc[:,'label']
 valid.drop('clickTime',axis=1,inplace=True)
 valid.fillna(-10,inplace=True)
 
-valid.to_csv('../data/dup/valid_fea{}.csv'.format(21),index=None)
+#valid.to_csv('../data/dup/valid_fea{}.csv'.format(21),index=None)
+valid.to_csv('../data/dup/test_fea{}.csv'.format(21),index=None)
+
 print valid.head()
 print "valid{} size:".format(21), valid.shape
 
