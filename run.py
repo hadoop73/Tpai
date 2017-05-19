@@ -8,7 +8,7 @@ start = time.time()
 NR_THREAD = 6
 
 # 首先对数据集进行采样，取 26 27 日作为训练数据，29作为验证数据集，21为生成的样本后缀。train21.csv valid21.csv
-cmd = '../features/data_sample.py 26 27 29 21'
+cmd = './features/data_sample.py 26 27 29 21'
 subprocess.call(cmd, shell=True)
 
 # 采样 28 29 作为训练数据，预测 test 作为预测数据
