@@ -1,19 +1,11 @@
+#!/home/hadoop/env2.7/bin/python
 # coding:utf-8
 
 from pyspark import SparkContext,SparkConf
 from pyspark.sql import SQLContext
-from pyspark.sql.catalog import Column
-from pyspark.sql.types import *
-from pyspark.sql import functions
-from pyspark.sql.functions import udf
-from datetime import datetime,timedelta
+from pyspark.sql.functions import UserDefinedFunction
+from pyspark.sql.types import DoubleType,FloatType
 import os
-from pyspark.sql.window import Window
-from pyspark.storagelevel import StorageLevel
-from pyspark.sql.functions import UserDefinedFunction,rank, col
-from pyspark.sql.types import LongType,StringType
-import numpy as np
-import pandas as pd
 
 
 os.environ["SPARK_HOME"] = "/home/hadoop/spark-2.0.1-bin-hadoop2.7"   #KeyError: 'SPARK_HOME'
@@ -38,6 +30,8 @@ train = sqlContext.read.format('com.databricks.spark.csv') \
 考虑统计每个类别对于 label 的影响
 """
 
+udf = UserDefinedFunction(lambda x, y: 1.0 * x / (x + y), FloatType())
+
 def adf(dd=None,col='',prefix=''):
     data1 = dd.filter("label=1").groupBy(col).count()
     data1 = data1.withColumnRenamed('count',col+'count1')
@@ -46,13 +40,14 @@ def adf(dd=None,col='',prefix=''):
 
     data = data0.join(data1,on=col,how='outer')
     data = data.fillna(0)
+    data = data.withColumn(col+'ratio',udf(data[col+'count1'],data[col+'count0']))
 
     print data.show()
     data.toPandas().to_csv('../data/ad/train_ad_{0}_{1}.csv'.format(col,prefix),index=None)
 
 d = train.join(ad,on='creativeID',how='left')
 
-for col in ['adID','camgaignID','appID','appPlatform','advertiserID']:
+for col in ['creativeID','adID','camgaignID','appID','appPlatform','advertiserID']:
     adf(d,col,prefix='all')
 del d
 
@@ -68,12 +63,13 @@ def userDummy(dd=None,col='',prefix=''):
 
     data = data0.join(data1,on=col,how='outer')
     data = data.fillna(0)
+    data = data.withColumn(col+'ratio',udf(data[col+'count1'],data[col+'count0']))
     print data.show()
     data.toPandas().to_csv('../data/user/train_user_{}_{}.csv'.format(col,prefix),index=None)
 
 d = train.join(user,on='userID',how='left')
 
-for col in ['gender','education','marriageStatus',
+for col in ['userID','gender','education','marriageStatus',
             'haveBaby']:
     userDummy(d,col,prefix='all')
 
