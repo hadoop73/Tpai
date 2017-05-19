@@ -22,28 +22,16 @@ print args
    train21all.csv 表示验证数据集之前的所有数据，也就是 29 日之前的所有数据
 """
 def GetTrainValidDatas():
-    train = pd.read_csv('../data/dup/train.csv')
-    # 采样负样本，采样 26 27 日负样本
-    train0 = train[train['label']==0]
-    d = []
-    for day in args['days'][:-2]:
-        t = train0[(train0['clickTime']>=day*10000)&(train0['clickTime']<day*10000+10000)]
-        d.append(t)
-    # 采样正样本,小于 29 日的所有正样本
-    t = train[(train['label']==1)&(train['clickTime']<args['days'][-2]*10000)]
-    d = pd.concat(d+[t])
-    d.to_csv('../data/dup/train{}.csv'.format(args['days'][-1]),index=None)
-    print d.head()
-    print "train{} size:".format(args['days'][-1]),d.shape
+    train = pd.read_csv('./data/dup/train.csv')
     # 采样验证数据集 valid21.csv
-    valid = train[(train['clickTime']>=args['days'][-2]*10000)&(train['clickTime']<args['days'][-2]*10000+10000)]
-    valid.to_csv('../data/dup/valid{}.csv'.format(args['days'][-1]),index=None)
+    valid = train[(train['clickTime'] >= 29 * 10000) & (train['clickTime'] < 29 * 10000 + 10000)]
+    valid.to_csv('./data/dup/valid{}.csv'.format(21), index=None)
     print valid.head()
-    print "valid{} size:".format(args['days'][-1]), valid.shape
     # 验证数据集之前的所有数据 train21all.csv
-    t = train[(train['clickTime']<args['days'][-2]*10000)]
-    t.to_csv('../data/dup/train{}all.csv'.format(args['days'][-1]),index=None)
-    print t.head()
+    t = train[(train['clickTime']<args['days'][-2]*10000+10000)]
+    t.ix[(train['clickTime']>=args['days'][-2]*10000),'label'] = -1
+    t.to_csv('./data/dup/train{}all.csv'.format(args['days'][-1]),index=None)
+    print t.tail()
     print "train{}all size:".format(args['days'][-1]), t.shape
 
 
