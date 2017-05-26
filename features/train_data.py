@@ -4,7 +4,7 @@
 import pandas as pd
 
 import argparse, csv, sys
-
+from train_sample import trainSample
 
 parser = argparse.ArgumentParser()
 parser.add_argument('csv_path', nargs="*")

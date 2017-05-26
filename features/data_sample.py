@@ -5,15 +5,14 @@
 import pandas as pd
 import argparse
 
-
-
+"""
 parser = argparse.ArgumentParser()
 parser.add_argument('days',type=int,nargs="*")
 
 args = vars(parser.parse_args())
 
 print args
-
+"""
 """
    参数格式：26 27 29 21
    26 27 表示负样本的采样日期
@@ -34,9 +33,38 @@ def GetTrainValidDatas():
     print t.tail()
     print "train{}all size:".format(args['days'][-1]), t.shape
 
+def GetTrainVTestDatas():
+    train = pd.read_csv('../data/dup/train.csv')
+    train.drop('conversionTime',axis=1,inplace=True)
+    #  test.csv
+    test = pd.read_csv('../data/dup/test.csv')
+    test.drop('instanceID',axis=1,inplace=True)
 
-GetTrainValidDatas()
+    t = train[(train['clickTime']<30*10000)]
+    t = pd.concat([t,test])
+    t.to_csv('../data/dup/train{}test.csv'.format(21),index=None)
+    print t.tail()
+    print "train{}test size:".format(21), t.shape
 
 
+def GetTrainValidTestDatas():
+    train = pd.read_csv('./data/dup/train.csv')
+    # 采样验证数据集 valid21.csv
+    valid = train[(train['clickTime'] >= 29 * 10000) & (train['clickTime'] < 29 * 10000 + 10000)]
+    valid.to_csv('./data/dup/valid{}.csv'.format(21), index=None)
+    print valid.head()
+    # 验证数据集之前的所有数据 train21all.csv
+    t = train[(train['clickTime']<29*10000+10000)]
+    t.ix[(train['clickTime']>=29*10000),'label'] = -1
+    t.to_csv('./data/dup/train{}all.csv'.format(21),index=None)
 
+    test = pd.read_csv('./data/dup/test.csv')
+    test.drop('instanceID', axis=1, inplace=True)
+    print t.tail()
+    print "train{}all size:".format(21), t.shape
+
+#GetTrainValidDatas()
+GetTrainVTestDatas()
+
+#GetTrainValidTestDatas()
 

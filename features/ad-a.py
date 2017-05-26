@@ -33,7 +33,6 @@ print d['label'].dtype
 
 del d
 
-
 with open('../data/dup/train.sparse','w') as ts:
     for i in range(ntrain):
         ones = []
