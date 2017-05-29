@@ -52,8 +52,9 @@ def dataSampleDay(data,rate=0.1,rand=133):
     if 'conversionTime' in data.columns:
         data.drop('conversionTime', axis=1, inplace=True)
     valid = data[(data['clickTime'] >= 29) & (data['clickTime'] < 30)]
-    valid = d[((d['clickTime']>=29)&(d['clickTime']<30))]
-    test = data[((d['clickTime']>=31)&(d['clickTime']<32))]
+    test = data[(data['clickTime']>=31)&(data['clickTime']<32)]
+
+    data = data[(data['clickTime'] >= 24) & (data['clickTime'] < 29)]
 
     d1 = data[data['label'] == 1]
     d0 = data[data['label'] == 0]

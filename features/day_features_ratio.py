@@ -30,7 +30,7 @@ d.loc[:,'clickTime'] = d['clickTime'].apply(lambda x:int(x/10000))
 d.loc[:,'hometown'] = d['hometown'].apply(lambda x:int(x/100))
 d.loc[:,'residence'] = d['residence'].apply(lambda x:int(x/100))
 
-d = d[d['clickTime']>=23]
+d = d[d['clickTime']>=21]
 
 cols = ['gender','education','marriageStatus','haveBaby','hometown','residence','sitesetID',
         'adID','camgaignID','appID','appPlatform','creativeID','advertiserID','positionID','positionType',
@@ -47,9 +47,6 @@ for col in cols:
         d.rename(columns={col+"day_ratio":col+str(i+1)+"day_ratio"},inplace=True)
         gc.collect()
 
-#train = d[((d['clickTime']>=26)&(d['clickTime']<28))]
-#valid = d[((d['clickTime']>=29)&(d['clickTime']<30))]
-#test = d[((d['clickTime']>=31)&(d['clickTime']<32))]
 
 from train_sample import dataSampleDay
 train,valid,test = dataSampleDay(d,rate=0.2)
