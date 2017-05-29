@@ -36,33 +36,48 @@ def user_live_state():
     print user.head()
     user.to_csv('../data/dup/user_state.csv',index=None)
 
-rand = 1023
+rand = 11
 from train_sample import trainDay
 def xx():
     d = pd.read_csv('../data/dup/user_state.csv')
     d = d[['userID','zeroSum','liveState']]
 
-    train = pd.read_csv('../data/dup/train_xgb{}.csv'.format(rand))
+    train = pd.read_csv('../data/dup/train_xgbM{}.csv'.format(rand))
     train = train.merge(d,on='userID',how='left')
 
-    valid = pd.read_csv('../data/dup/valid_xgb{}.csv'.format(rand))
+    valid = pd.read_csv('../data/dup/valid_xgbM{}.csv'.format(rand))
     valid = valid.merge(d,on='userID',how='left')
 
-    test = pd.read_csv('../data/dup/test_xgb{}.csv'.format(rand))
+    test = pd.read_csv('../data/dup/test_xgbM{}.csv'.format(rand))
     test = test.merge(d, on='userID', how='left')
 
-    trainDf = trainDay()
-    df = trainDf[['label', 'userID']]
+    trainDf = pd.read_csv('../data/dup/train.csv')
+    df = trainDf[['label', 'userID','clickTime']]
+    df['clickTimeDay'] = df['clickTime'].apply(lambda x: int(x / 10000))
+
     df = df.merge(d, on='userID', how='left')
     del trainDf
-    for col in ['liveState']:
-        d = df[['label',col]]
-        d = d.groupby(col,as_index=False)['label'].agg({col+'_mean_ratio':np.mean,
-                                                         col+'_counts':np.size,
-                                                         col+'_positivecounts':np.sum})
-        train = train.merge(d,on=col,how='left')
-        valid = valid.merge(d, on=col, how='left')
-        test = test.merge(d, on=col, how='left')
+
+    for col in ['liveState','zeroSum']:
+        d = df[['label',col,'clickTimeDay']]
+
+        ts = []
+        for i in range(1, 6):
+            td = d.copy()
+            td.loc[:, 'clickTimeDay'] = td['clickTimeDay'].apply(lambda x: x + i)
+            ts.append(td)
+            ds = pd.concat(ts)
+            # print ds.head()
+            ds = ds.groupby([col, 'clickTimeDay'], as_index=False)['label'].agg({col + "_ratio_" + str(i): np.mean,
+                                                                                 col + "_size_" + str(i): np.size,
+                                                                                 col + "_sum_" + str(i): np.sum})
+            ds.loc[:, col + "_size_" + str(i)] = ds[col + "_size_" + str(i)].apply(lambda x: x / i)
+            ds.loc[:, col + "_sum_" + str(i)] = ds[col + "_sum_" + str(i)].apply(lambda x: x / i)
+
+            # train29 = train29.merge(d, on=[col,'clickTimeDay'], how='left')
+            train = train.merge(ds, on=[col, 'clickTimeDay'], how='left')
+            valid = valid.merge(ds, on=[col, 'clickTimeDay'], how='left')
+            test = test.merge(ds, on=[col, 'clickTimeDay'], how='left')
 
     train.to_csv('../data/dup/train_xgb{}U.csv'.format(rand), index=None)
     valid.to_csv('../data/dup/valid_xgb{}U.csv'.format(rand), index=None)
@@ -119,9 +134,9 @@ def mergeUserDatas():
 
 def mergeDataHour():
     #train = pd.read_csv('../data/dup/data_user.csv')
-    train = pd.read_csv('../data/dup/train_data_user{}.csv'.format(rand))
-    valid = pd.read_csv('../data/dup/valid_data_user{}.csv'.format(rand))
-    test = pd.read_csv('../data/dup/test_data_user{}.csv'.format(rand))
+    train = pd.read_csv('../data/dup/train_xgb{}U.csv'.format(rand))
+    valid = pd.read_csv('../data/dup/valid_xgb{}U.csv'.format(rand))
+    test = pd.read_csv('../data/dup/test_xgb{}U.csv'.format(rand))
 
     train.loc[:, 'clickTimecp'] = train['clickTime']
     train.loc[:,'clickTime'] = train['clickTimecp'].apply(lambda x:int(24*(x/10000-17))+int(x%10000/100))
@@ -231,9 +246,9 @@ def mergeDataDay():
     print train.shape, valid.shape, test.shape
 
 xx()
-mergeUserDatas()
-mergeDataHour()
-mergeDataDay()
+#mergeUserDatas()
+#mergeDataHour()
+#mergeDataDay()
 #mergeDataDayActive()
 
 

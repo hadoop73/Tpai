@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import gc
 
-def trainSample(data=None,rate=0.15,rand=133):
+def trainSample(data=None,rate=0.2,rand=133):
     if None == data:
         data = pd.read_csv('../data/dup/train.csv')
     if 'conversionTime' in data.columns:
@@ -14,7 +14,7 @@ def trainSample(data=None,rate=0.15,rand=133):
     test = pd.read_csv('../data/dup/test.csv')
     test.drop('instanceID', axis=1, inplace=True)
 
-    data = data[data['clickTime'] < 290000]
+    data = data[(data['clickTime'] >= 220000) & (data['clickTime'] < 290000)]
     d1 = data[data['label']==1]
     d0 = data[data['label']==0]
     d0 = d0.sample(frac=rate,random_state=rand)
@@ -52,8 +52,8 @@ def dataSampleDay(data,rate=0.1,rand=133):
     if 'conversionTime' in data.columns:
         data.drop('conversionTime', axis=1, inplace=True)
     valid = data[(data['clickTime'] >= 29) & (data['clickTime'] < 30)]
-    #valid = d[((d['clickTime']>=29)&(d['clickTime']<30))]
-    test = data[((data['clickTime']>=31)&(data['clickTime']<32))]
+    valid = d[((d['clickTime']>=29)&(d['clickTime']<30))]
+    test = data[((d['clickTime']>=31)&(d['clickTime']<32))]
 
     d1 = data[data['label'] == 1]
     d0 = data[data['label'] == 0]
