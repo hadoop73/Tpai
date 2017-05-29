@@ -24,6 +24,7 @@ del user
 d = d.merge(position,on='positionID',how='left')
 del position
 
+d.loc[:,'hour'] = d['clickTime'].apply(lambda x:int(x%10000/100))
 # 按天统计
 d.loc[:,'clickTime'] = d['clickTime'].apply(lambda x:int(x/10000))
 
@@ -47,10 +48,19 @@ for col in cols:
         d.rename(columns={col+"day_ratio":col+str(i+1)+"day_ratio"},inplace=True)
         gc.collect()
 
+    t = d[['label', 'clickTime', 'hour', col]]
+    t = t.groupby([col, 'clickTime', 'hour'], as_index=False)['label'].mean()
+    t.rename(columns={'label':col+"day_hour_ratio"},inplace=True)
+    for i in range(3):
+        t.loc[:, 'clickTime'] = t['clickTime'] + 1
+        d = d.merge(t, on=[col, 'clickTime', 'hour'], how='left')
+        d.rename(columns={col+"day_hour_ratio": col + str(i + 1) + "day_hour_ratio"}, inplace=True)
+        gc.collect()
 
-from train_sample import dataSampleDay
-train,valid,test = dataSampleDay(d,rate=0.2)
+from train_sample import dataSampleDay,dataTrain
+train,valid,test = dataTrain(d,rate=0.25)
 
+print train.head()
 print train.shape,valid.shape,test.shape
 
 train.to_csv('../data/dup/train_xgbD133.csv',index=None)
