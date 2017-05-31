@@ -24,16 +24,16 @@ def evalerror(preds,dtrain):
 """"""
 #atrain = pd.read_csv('../data/dup/train_xgbA.csv')
 
-atrain = pd.read_csv('../data/dup/train_hour.csv')
+atrain = pd.read_csv('../data/dup/train_xgb11U.csv')
 atrain.fillna(-10,inplace=True)
 trainy = atrain['label']
 atrain.drop('label',axis=1,inplace=True)
 
-test = pd.read_csv('../data/dup/test_hour.csv')
+test = pd.read_csv('../data/dup/test_xgb11U.csv')
 test.fillna(0,inplace=True)
 test.drop('label',axis=1,inplace=True)
 
-avalid = pd.read_csv('../data/dup/valid_hour.csv')
+avalid = pd.read_csv('../data/dup/valid_xgb11U.csv')
 avalid.fillna(-10,inplace=True)
 
 validy = avalid['label']
@@ -82,10 +82,8 @@ def XGBoost_(train=atrain,y=trainy,test=test,valid=avalid,validy=validy,k=0,num_
     #del test
     watchlist = [(dvalid, 'eval')]
     # auc = cv_log['test-auc-mean'].max()
-
     bst = xgb.train(param, dtrain, num_round, watchlist,early_stopping_rounds=10)
     # make prediction
-    """
     treeIndex = bst.predict(dvalid, ntree_limit=bst.best_ntree_limit,pred_leaf=True)
     df = pd.DataFrame(treeIndex)
     df.to_csv('../data/dup/valid.xgb.csv',index=None)
@@ -103,12 +101,10 @@ def XGBoost_(train=atrain,y=trainy,test=test,valid=avalid,validy=validy,k=0,num_
 
 
     """
-    preds = bst.predict(dtest, ntree_limit=bst.best_ntree_limit)
     t = pd.read_csv('../data/dup/test.csv')
     t['prob'] = preds
     t[['instanceID', 'prob']].to_csv('./submission.csv', index=None)
 
-    scores = bst.predict(dvalid, ntree_limit=bst.best_ntree_limit)
     lgloss = logloss(validy, scores)
     print "logloss", lgloss
     bst.save_model('bst{}.model'.format(str(lgloss)))
@@ -133,7 +129,7 @@ def XGBoost_(train=atrain,y=trainy,test=test,valid=avalid,validy=validy,k=0,num_
     with open(ff, 'w') as f:
         f.writelines("feature,score\n")
         f.writelines(fs)
-    return -lgloss
+    return -lgloss"""
 
 
 XGBoost_()
