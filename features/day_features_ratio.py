@@ -53,14 +53,17 @@ def writeCols(col):
 
 
 from multiprocessing import Pool
-pool = Pool(8)
-pool.map(writeCols,cols)
-pool.close()
-pool.join()
+#pool = Pool(8)
+#pool.map(writeCols,cols)
+#pool.close()
+#pool.join()
 
 def delPart(dt):
+    day = dt['clickTime'].max()
+    print 'time:',day
     for col in cols:
         t = pd.read_csv('../data/dup/{}_day_ratio.csv'.format(col))
+        t = t[(t['clickTime'] >= day - 3) & (t['clickTime'] < day)]
         for i in range(3):
             t.loc[:,'clickTime'] = t['clickTime'] + 1
             dt = dt.merge(t,on=[col,'clickTime'],how='left')
@@ -75,7 +78,7 @@ def delPart(dt):
         dt.loc[:,col+"day_3Pcount"] = dt[[col+"1day_Pcount",col+"2day_Pcount",col+"3day_Pcount"]].apply(np.mean,axis=1)
 
         t = pd.read_csv('../data/dup/{}_hour_ratio.csv'.format(col))
-
+        t = t[(t['clickTime']>=day-3)&(t['clickTime']<day)]
         for i in range(3):
             t.loc[:, 'clickTime'] = t['clickTime'] + 1
             dt = dt.merge(t, on=[col, 'clickTime', 'hour'], how='left')
@@ -92,27 +95,54 @@ def delPart(dt):
         dt.loc[:,col+"hour_3Pcount"] = dt[[col+"1hour_Pcount",col+ "2hour_Pcount", col + "3hour_Pcount"]].apply(np.mean,
                                                                                                       axis=1)
     print dt.head()
-    return dt
 
-dts = [d[d['clickTime']==i] for i in range(22,32)]
+    dt.to_csv('../data/dup/dt{}.csv'.format(day),index=None)
+    #return dt
 
-pool = Pool(6)
-rst = pool.map(delPart,dts)
-pool.close()
-pool.join()
+#dts = [d[d['clickTime']==i] for i in range(22,32)]
 
-d = pd.concat(rst)
+#pool = Pool(6)
+#pool.map(delPart,dts)
+#pool.close()
+#pool.join()
+#del dts
+
+rst = []
+for i in range(24,29):
+    t = pd.read_csv('../data/dup/dt{}.csv'.format(i))
+    d1 = t[t['label'] == 1]
+    d0 = t[t['label'] == 0]
+    d0 = d0.sample(frac=0.25, random_state=133)
+    d1 = d1.sample(frac=0.25, random_state=133)
+    rst += [d0,d1]
+
+train = pd.concat(rst)
+
+train.to_csv('../data/dup/train_ratio.csv',index=None)
+print train.head()
+print train.shape
+
+del train,d
+gc.collect()
+
+valid = pd.read_csv('../data/dup/dt{}.csv'.format(29))
+valid.to_csv('../data/dup/valid_ratio.csv',index=None)
+
+del valid
 
 from train_sample import dataSampleDay,dataTrain
-train,valid,test = dataSampleDay(d,rate=0.17)
+#train,valid,test = dataSampleDay(d,rate=0.17)
+test = pd.read_csv('../data/dup/dt{}.csv'.format(31))
 
-print train.head()
-print train.shape,valid.shape,test.shape
+test.to_csv('../data/dup/test_ratio.csv',index=None)
+
+del test
+
+
 
 #train.to_csv('../data/dup/train_xgbD133.csv',index=None)
 
-train.to_csv('../data/dup/train_ratio.csv',index=None)
-valid.to_csv('../data/dup/valid_ratio.csv',index=None)
-test.to_csv('../data/dup/test_ratio.csv',index=None)
+
+
 
 
