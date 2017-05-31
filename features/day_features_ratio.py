@@ -38,8 +38,9 @@ cols = ['gender','education','marriageStatus','haveBaby','hometown','residence',
         'connectionType','telecomsOperator']
 import gc
 
-cols = ['gender']
+#cols = ['gender']
 def writeCols(col):
+    print 'writeCols',col
     t = d[['label','clickTime',col]]
     t = t.groupby([col,'clickTime'],as_index=False)['label'].agg({col+"day_ratio":np.mean,
                                                                   col + "day_Pcount":np.sum})
@@ -52,7 +53,7 @@ def writeCols(col):
 
 
 from multiprocessing import Pool
-pool = Pool(4)
+pool = Pool(8)
 pool.map(writeCols,cols)
 pool.close()
 pool.join()
@@ -89,12 +90,13 @@ def delPart(dt):
         dt.loc[:,col+"hour_3ratio"] = dt[[col+"1hour_ratio",col+"2hour_ratio",col+"3hour_ratio"]].apply(np.mean,
                                                                                            axis=1)
         dt.loc[:,col+"hour_3Pcount"] = dt[[col+"1hour_Pcount",col+ "2hour_Pcount", col + "3hour_Pcount"]].apply(np.mean,
-                                                                                                             axis=1)
-        return dt
+                                                                                                      axis=1)
+    print dt.head()
+    return dt
 
 dts = [d[d['clickTime']==i] for i in range(22,32)]
 
-pool = Pool(4)
+pool = Pool(6)
 rst = pool.map(delPart,dts)
 pool.close()
 pool.join()
@@ -102,7 +104,7 @@ pool.join()
 d = pd.concat(rst)
 
 from train_sample import dataSampleDay,dataTrain
-train,valid,test = dataSampleDay(d,rate=0.1)
+train,valid,test = dataSampleDay(d,rate=0.17)
 
 print train.head()
 print train.shape,valid.shape,test.shape
