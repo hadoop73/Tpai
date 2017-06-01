@@ -17,12 +17,12 @@ def logloss(act, pred):
   return ll
 
 
-train = pd.read_csv('../data/dup/train_3.csv')
+train = pd.read_csv('../data/dup/train_d.csv')
 trainy = train['label']
 train.drop('label',axis=1,inplace=True)
 train.fillna(0,inplace=True)
 
-valid = pd.read_csv('../data/dup/valid_3.csv')
+valid = pd.read_csv('../data/dup/valid_d.csv')
 validy = valid['label']
 valid.drop('label',axis=1,inplace=True)
 valid.fillna(0,inplace=True)
@@ -56,8 +56,10 @@ def XGBoost_(train=train,y=trainy,test=None,valid=valid,validy=validy,k=0,num_ro
     #preds = bst.predict(dtest, ntree_limit=bst.best_ntree_limit)
     #p = bst.predict(dtrain, ntree_limit=bst.best_ntree_limit)
     scores = bst.predict(dvalid, ntree_limit=bst.best_ntree_limit)
-
+    ps = bst.predict(dtrain, ntree_limit=bst.best_ntree_limit)
     lgloss = logloss(validy, scores)
+    trlgloss = logloss(trainy, ps)
+
     print "logloss", lgloss
     bst.save_model('./bayes/bst{}.model'.format(int(lgloss*10000)))
 
@@ -77,7 +79,7 @@ def XGBoost_(train=train,y=trainy,test=None,valid=valid,validy=validy,k=0,num_ro
         f.writelines(fs)
 
     with open('./xgb.txt',mode='a+') as f:
-        f.write('logloss:{0} AUC:{1} ntree:{2}\n'.format(lgloss,auc,bst.best_ntree_limit))
+        f.write('trlogloss:{0} logloss:{1} AUC:{2} ntree:{3}\n'.format(trlgloss,lgloss,auc,bst.best_ntree_limit))
         f.write(str(param))
         f.write("\n")
 
