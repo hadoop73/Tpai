@@ -52,9 +52,8 @@ def XGBoost_(train=train,y=trainy,test=None,valid=valid,validy=validy,k=0,num_ro
     # auc = cv_log['test-auc-mean'].max()
     bst = xgb.train(param, dtrain, num_round, watchlist, early_stopping_rounds=8)
     # make prediction
-    #dtest = xgb.DMatrix(test, missing=-10)
-    #preds = bst.predict(dtest, ntree_limit=bst.best_ntree_limit)
-    #p = bst.predict(dtrain, ntree_limit=bst.best_ntree_limit)
+
+
     scores = bst.predict(dvalid, ntree_limit=bst.best_ntree_limit)
     ps = bst.predict(dtrain, ntree_limit=bst.best_ntree_limit)
     lgloss = logloss(validy, scores)
