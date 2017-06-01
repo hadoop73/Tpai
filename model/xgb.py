@@ -84,10 +84,6 @@ def XGBoost_(train=train,y=trainy,test=None,valid=valid,validy=validy,k=0,num_ro
 
     return -lgloss
 
-#test = pd.read_csv('../data/dup/dtest.csv')
-#testy = test['label']
-#test.drop('label',axis=1,inplace=True)
-
 
 
 from bayes_opt import bayesian_optimization
