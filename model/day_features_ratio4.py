@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from multiprocessing import Pool
+import os
 
 train = pd.read_csv('../data/pre/train.csv')
 train.drop(['conversionTime'],axis=1,inplace=True)
@@ -50,13 +51,15 @@ import gc
 def writeCols(col):
     colstr = "".join(col)
     print 'writeCols',col
-    for i in range(30, 32):
-        t = d[d['day'] < i][['label']+col]
+    for i in range(24, 32):
+        if os.path.exists('../data/dup/{}{}_ratio.csv'.format(colstr,i)):
+            continue
+        t = d[(d['day'] < i)&(d['day'] >= i-7)][['label']+col]
         t = t.groupby(col,as_index=False)['label'].agg({colstr+"ratio":np.mean})
         #t.to_csv('../data/dup/{}_day_ratio1.csv'.format(col),index=None) # 只有 day_ratio 的数据
         t.to_csv('../data/dup/{}{}_ratio.csv'.format(colstr,i),index=None) # 有 day_ratio 和 day_Pcount 数据
 
-
+        del t
 
 pool = Pool(2)
 pool.map(writeCols,cols)
@@ -67,12 +70,14 @@ pool.join()
 def delPart(dt):
     day = dt['day'].max()
     print 'time:',day
+    if os.path.exists('../data/dup/dt3prior{}.csv'.format(day)):
+        return
     for col in cols:
         colstr = "".join(col)
 
         t = pd.read_csv('../data/dup/{}{}_ratio.csv'.format(colstr,day))
         dt = dt.merge(t,on=col,how='left')
-
+        del t
         dt.fillna(0,inplace=True)
         #t = pd.concat(ts)
         #del ts
@@ -85,9 +90,10 @@ def delPart(dt):
     print dt.head()
     #dt.to_csv('../data/dup/dt{}.csv'.format(day),index=None)
     dt.to_csv('../data/dup/dt3prior{}.csv'.format(day),index=None)
+    del dt
     #return dt
 
-dts = [d[d['day']==i] for i in range(30,32)]
+dts = [d[d['day']==i] for i in range(24,32)]
 
 pool = Pool(6)
 pool.map(delPart,dts)
