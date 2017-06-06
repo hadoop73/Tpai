@@ -36,19 +36,30 @@ else:
 
     d.loc[:,'home'] = d['hometown'].apply(lambda x:int(x/100))
     d.loc[:,'resid'] = d['residence'].apply(lambda x:int(x/100))
+    d['userID'] = d['userID'].astype(str)
+    d['creativeID'] = d['creativeID'].astype(str)
 
+    d.loc[:, 'uc'] = d[['userID', 'creativeID']].apply(lambda x: "".join(x),axis=1)
 
     for day in range(17,32):
+
         dt = d[(d['day'] >= day) & (d['day'] < day+1)]
         n = dt.shape[0]
         d.loc[(d['day']>=day)&(d['day']<day+1),'rank'] = range(1,n+1)
-        creativeIDs = pd.unique(dt['creativeID'])
 
+        creativeIDs = pd.unique(dt['creativeID'])
         for id in creativeIDs:
 
             n = dt[dt['creativeID']==id].shape[0]
             d.loc[(d['day']>=day)&(d['day']<day+1)&(d['creativeID']==id),'creativeRank'] = range(1,n+1)
 
+
+        creativeIDs = pd.unique(dt['uc'])
+        for id in creativeIDs:
+            n = dt[dt['uc'] == id].shape[0]
+            d.loc[(d['day']>=day)&(d['day']<day+1)&(d['uc']==id),'ucRank'] = range(1,n+1)
+
+    d.drop('uc',axis=True,inplace=True)
     print d.head()
 
 
