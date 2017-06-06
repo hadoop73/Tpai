@@ -36,8 +36,10 @@ else:
 
     d.loc[:,'home'] = d['hometown'].apply(lambda x:int(x/100))
     d.loc[:,'resid'] = d['residence'].apply(lambda x:int(x/100))
+    d['userID'] = d['userID'].astype(str)
+    d['creativeID'] = d['creativeID'].astype(str)
 
-    d.loc[:, 'uc'] = d[['userID', 'creativeID']].apply(lambda x: "".join(x))
+    d.loc[:, 'uc'] = d[['userID', 'creativeID']].apply(lambda x: "".join(x),axis=1)
 
     for day in range(17,32):
 
