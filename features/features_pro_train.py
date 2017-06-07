@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 from multiprocessing import Pool
 
 
-if os.path.exists('../data/dup/allA.csv'):
+if os.path.exists('../data/dup/allAA.csv'):
     d = pd.read_csv('../data/dup/allA.csv')
 else:
     train = pd.read_csv('../data/pre/train.csv')
@@ -36,34 +36,28 @@ else:
 
     d.loc[:,'home'] = d['hometown'].apply(lambda x:int(x/100))
     d.loc[:,'resid'] = d['residence'].apply(lambda x:int(x/100))
-    d['userID'] = d['userID'].astype(str)
-    d['creativeID'] = d['creativeID'].astype(str)
 
-    d.loc[:, 'uc'] = d[['userID', 'creativeID']].apply(lambda x: "".join(x),axis=1)
 
-    for day in range(17,32):
-
-        dt = d[(d['day'] >= day) & (d['day'] < day+1)]
+    def func(dt):
         n = dt.shape[0]
-        d.loc[(d['day']>=day)&(d['day']<day+1),'rank'] = range(1,n+1)
+        dt.loc[:,'rank'] = range(1,n+1)
+        for c in ['appID','creativeID','positionID']:
+            ids = pd.unique(dt[c])
 
-        creativeIDs = pd.unique(dt['creativeID'])
-        for id in creativeIDs:
+            for id in ids:
+                n = dt[dt[c]==id].shape[0]
+                dt.loc[dt[c]==id,c+'rank'] = range(1,n+1)
 
-            n = dt[dt['creativeID']==id].shape[0]
-            d.loc[(d['day']>=day)&(d['day']<day+1)&(d['creativeID']==id),'creativeRank'] = range(1,n+1)
+        return dt
 
-
-        creativeIDs = pd.unique(dt['uc'])
-        for id in creativeIDs:
-            n = dt[dt['uc'] == id].shape[0]
-            d.loc[(d['day']>=day)&(d['day']<day+1)&(d['uc']==id),'ucRank'] = range(1,n+1)
-
-    d.drop('uc',axis=True,inplace=True)
+    days = [d[d['day']==i] for i in range(17,32)]
+    pool = Pool(4)
+    rst = pool.map(func,days)
+    d = pd.concat(rst)
     print d.head()
 
 
-    d.to_csv('../data/dup/allA.csv',index=None)
+    d.to_csv('../data/dup/all.csv',index=None)
 
 d.loc[:,'cID'] = 0
 d.loc[(d['creativeID']==4565),'cID'] = 1
