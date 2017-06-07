@@ -280,15 +280,15 @@ def  dataFFMs(f):
 
 for f in ['train','valid','test']:
     #treeFea(f)
-    train = pd.read_csv('../data/dup/{}_r.csv'.format(f))
+    train = pd.read_csv('../data/dup/{}_d.csv'.format(f))
     train.fillna(0, inplace=True)
     y = train['label']
-    train.drop('label', axis=1, inplace=True)
+    train.drop(['label','userID','clickTime'], axis=1, inplace=True)
 
     # 类别特征处理
     d = train  # 读取原始数据中的 类别特征
-    cols = ['adID', 'camgaignID', 'appID', 'appPlatform', 'advertiserID', 'creativeID', 'sitesetID',
-            'positionType', 'positionID', 'telecomsOperator', 'connectionType', 'gender',
+    cols = ['adID', 'home','camgaignID', 'appID', 'appPlatform', 'advertiserID', 'creativeID', 'sitesetID',
+            'positionType', 'positionID', 'telecomsOperator', 'connectionType', 'gender', 'resid'
             'education', 'marriagedStatus', 'haveBaby', 'hometown', 'residence', 'liveState']
 
     cols = [col for col in cols if col in d.columns]

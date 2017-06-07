@@ -7,34 +7,25 @@ import numpy as np
 
 user_apps = pd.read_csv('../data/dup/user_installedapps.csv')
 
-# userID 的过去安装 app 情况
-def user_state():
-    users = pd.unique(user_apps['userID'])
 
-    user_apps_state = pd.DataFrame({'userID':users})
-    user_apps_state['userAppsState'] = 1
+f = 'train'
 
-    print user_apps_state.head()
-    print user_apps_state.shape
+d = pd.read_csv('../data/dup/{}_r.csv'.format(f))
 
-    user_apps_state.to_csv('../data/user_installedapps/user_app_state.csv',index=None)
+userID = pd.unique(d['userID'])
 
-# app 过去安装次数
-def app_install_count():
-    train = pd.read_csv('../data/dup/train.csv')
-    ad = pd.read_csv('../data/dup/ad.csv')
+uId = pd.DataFrame({'userID':userID})
+dt = user_apps.merge(uId,on='userID',how='left')
 
-    train = train.merge(ad,on='creativeID',how='left')
+dt.loc[:,'installed'] = 1
+d = d.merge(dt,on=['userID','appID'],how='left')
 
-    apps = pd.unique(train['appID'])
 
-    appDf = pd.DataFrame({'appID':apps})
+t = dt.groupby('userID',as_index=False)['appID'].agg({'installCount':np.size})
 
-    user_apps = user_apps.merge(appDf,on='appID')
-    user_apps['count'] = 1
-    d = user_apps.groupby('appID',as_index=False)['count'].agg({'appInstallcount':np.size})
+d = d.merge(t,on='userID',how='left')
 
-    print d.head()
-    d.to_csv('../data/user_installedapps/app_count.csv',index=None)
+
+
 
 

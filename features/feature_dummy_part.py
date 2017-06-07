@@ -27,7 +27,7 @@ del user
 
 for f in ['train','valid','test']:
 
-    train = pd.read_csv('../data/dup/{}_r.csv'.format(f))
+    train = pd.read_csv('../data/dup/{}_r2.csv'.format(f))
     #valid = pd.read_csv('../data/dup/valid_r.csv')
     #test = pd.read_csv('../data/dup/test_r.csv')
 
@@ -39,25 +39,29 @@ for f in ['train','valid','test']:
     train = train.join(d)
 
     def ageFun(x):
-        if x==0: return 0
+        if x==0: return 4
         if x>10 and x<=20:
             return 1
         elif x <= 30:
             return 2
         elif x==10 or x <=40:
             return 3
-        return 4
+        return 0
     train.loc[:,'ageCate'] = train['age'].apply(ageFun)
     d = pd.get_dummies(train['ageCate'],prefix='age')
+    d.drop('age_0',axis=1,inplace=True)
     train.drop('ageCate',axis=1,inplace=True)
     train = train.join(d)
 
     def educationFun(x):
+        if x ==0 :return 5
         if x>4:
-            return 5
+            return 0
         return x
     train.loc[:,'educationCate'] = train['education'].apply(educationFun)
     d = pd.get_dummies(train['educationCate'],prefix='education')
+    d.drop('education_0',axis=1,inplace=True)
+
     train.drop('educationCate',axis=1,inplace=True)
     train = train.join(d)
 
@@ -66,11 +70,13 @@ for f in ['train','valid','test']:
 
 
     def haveBabyFun(x):
+        if x==0:return 2
         if x>1:
-            return 2
+            return 0
         return x
     train.loc[:,'haveBabyCate'] = train['haveBaby'].apply(haveBabyFun)
     d = pd.get_dummies(train['haveBabyCate'],prefix='haveBaby')
+    d.drop('haveBaby_0', axis=1, inplace=True)
     train.drop('haveBabyCate',axis=1,inplace=True)
     train = train.join(d)
 
@@ -79,9 +85,10 @@ for f in ['train','valid','test']:
             return 4565
         if x==376:
             return 376
-        return 1
+        return 0
     train.loc[:,'creativeIDCate'] = train['creativeID'].apply(creativeIDFun)
     d = pd.get_dummies(train['creativeIDCate'],prefix='creativeID')
+    d.drop('creativeID_0', axis=1, inplace=True)
     train.drop('creativeIDCate',axis=1,inplace=True)
     train = train.join(d)
 
@@ -89,9 +96,10 @@ for f in ['train','valid','test']:
         cx = [293,3379,3593,3102]
         if x in cx:
             return x
-        return 1
+        return 0
     train.loc[:,'adIDCate'] = train['adID'].apply(adIDFun)
     d = pd.get_dummies(train['adIDCate'],prefix='adID')
+    d.drop('adID_0', axis=1, inplace=True)
     train.drop('adIDCate',axis=1,inplace=True)
     train = train.join(d)
 
@@ -99,9 +107,10 @@ for f in ['train','valid','test']:
         cx = [632,649,411,440,201]
         if x in cx:
             return x
-        return 1
+        return 0
     train.loc[:,'camgaignIDCate'] = train['camgaignID'].apply(camgaignIDFun)
     d = pd.get_dummies(train['camgaignIDCate'],prefix='camgaignID')
+    d.drop('camgaignID_0', axis=1, inplace=True)
     train.drop('camgaignIDCate',axis=1,inplace=True)
     train = train.join(d)
 
@@ -109,9 +118,10 @@ for f in ['train','valid','test']:
         cx = [3,84,81,15,89]
         if x in cx:
             return x
-        return 1
+        return 0
     train.loc[:,'advertiserIDCate'] = train['advertiserID'].apply(advertiserIDFun)
     d = pd.get_dummies(train['advertiserIDCate'],prefix='advertiserID')
+    d.drop('advertiserID_0', axis=1, inplace=True)
     train.drop('advertiserIDCate',axis=1,inplace=True)
     train = train.join(d)
 
@@ -124,9 +134,10 @@ for f in ['train','valid','test']:
         cx = [465,360,421,109,383]
         if x in cx:
             return x
-        return 1
+        return 0
     train.loc[:,'appIDCate'] = train['appID'].apply(appIDFun)
     d = pd.get_dummies(train['appIDCate'],prefix='appID')
+    d.drop('appID_0', axis=1, inplace=True)
     train.drop('appIDCate',axis=1,inplace=True)
     train = train.join(d)
 
@@ -139,36 +150,42 @@ for f in ['train','valid','test']:
         cx = [465,360,421,109,383]
         if x in cx:
             return x
-        return 1
+        return 0
     train.loc[:,'connectionTypeCate'] = train['connectionType'].apply(connectionTypeFun)
     d = pd.get_dummies(train['connectionTypeCate'],prefix='connectionType')
+    d.drop('connectionType_0', axis=1, inplace=True)
     train.drop('connectionTypeCate',axis=1,inplace=True)
     train = train.join(d)
 
 
-    train.loc[:,'resid'] = train['residence'].apply(lambda x:int(x/100))
-    train.loc[:,'home'] = train['hometown'].apply(lambda x:int(x/100))
+    #train.loc[:,'resid'] = train['residence'].apply(lambda x:int(x/100))
+    #train.loc[:,'home'] = train['hometown'].apply(lambda x:int(x/100))
 
 
     def homeFun(x):
-        if x==0: return 0
+        if x==0: return 7
         cx = [1,2,3,4,6]
         if x in cx:
-            return 2
-        return 1
+            return x
+        return 0
     train.loc[:,'homeCate'] = train['home'].apply(homeFun)
     d = pd.get_dummies(train['homeCate'],prefix='home')
+    d.drop('home_0', axis=1, inplace=True)
     train.drop('homeCate',axis=1,inplace=True)
     train = train.join(d)
 
     def residFun(x):
         if x < 4:
             return x
-        return 1
+        return 0
     train.loc[:,'residCate'] = train['resid'].apply(residFun)
     d = pd.get_dummies(train['residCate'],prefix='resid')
+    d.drop('resid_0', axis=1, inplace=True)
     train.drop('residCate',axis=1,inplace=True)
     train = train.join(d)
+
+    cols = [c for c in train.columns if '_' in c]
+    train.loc[:,'_all'] = (train[cols]==1).sum(axis=1)
     print train.shape
     train.to_csv('../data/dup/{}_d.csv'.format(f),index=None)
     del train

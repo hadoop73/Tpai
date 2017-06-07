@@ -60,15 +60,15 @@ cmd ='./ad-b.py ../data/dup/dtrain1.csv ../data/dup/tr.gbdt.out ../data/dup/trai
 cmd = './ffm-train -k 6 -t 20 -r 0.1 --auto-stop -s {nr_thread} -p ./data/dup/valid_part.ffm ./data/dup/train_part.ffm modelA'.format(nr_thread=NR_THREAD)
 #subprocess.call(cmd, shell=True)
 
-cmd = './ffm-train -k 4 -t 200 -s {nr_thread} -p ./data/dup/valid.ffm ./data/dup/train.ffm modelA'.format(nr_thread=NR_THREAD)
-#subprocess.call(cmd, shell=True)
+cmd = './ffm-train -k 4 -t 7 -s {nr_thread} -p ./data/dup/valid.ffm ./data/dup/train.ffm modelA'.format(nr_thread=NR_THREAD)
+subprocess.call(cmd, shell=True)
 
 cmd = "./libFM -task c -train ./data/dup/train.rand.fm -test ./data/dup/test.rand.fm -dim '1,1,8' -iter 50 " \
       "-out ./te.out -method sgda -learn_rate 0.01 -init_stdev 0.1 -validation ./data/dup/valid.rand.fm"
 #subprocess.call(cmd, shell=True)
 
-cmd = "./libFM -task c -train ./data/dup/train.tmp.dense.fm -test ./data/dup/valid.tmp.dense.fm -dim '1,1,8' -iter 20 -out ./test.out -method mcmc -learn_rate 0.01 -init_stdev 0.1"
-subprocess.call(cmd, shell=True)
+cmd = "./libFM1 -task c -train ./data/dup/train.rand.fm -test ./data/dup/test.rand.fm -dim '1,4,8' -iter 5 -out ./fm2.out -method mcmc -regular '0,0.2,4' -learn_rate 0.01 -init_stdev 0.1"
+#subprocess.call(cmd, shell=True)
 
 """
 使用测试数据 te.ffm 通过模型 model 进行预测
@@ -76,7 +76,7 @@ subprocess.call(cmd, shell=True)
 cmd = './ffm-predict ./data/dup/valid.ffm modelA ./data/dup/valid.out'.format(nr_thread=NR_THREAD)
 #subprocess.call(cmd, shell=True)
 
-cmd = './ffm-predict ./data/dup/test.ffm modelA ./data/dup/res.out'.format(nr_thread=NR_THREAD)
-#subprocess.call(cmd, shell=True)
+cmd = './ffm-predict ./data/dup/test.ffm modelA ./data/res.out'.format(nr_thread=NR_THREAD)
+subprocess.call(cmd, shell=True)
 
 print 'time used = {0:.0f}'.format(time.time()-start)

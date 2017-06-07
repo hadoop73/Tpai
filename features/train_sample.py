@@ -54,7 +54,7 @@ def dataSampleDay(data,rate=0.1,rand=133):
     valid = data[(data['clickTime'] >= 29) & (data['clickTime'] < 30)]
     test = data[(data['clickTime']>=31)&(data['clickTime']<32)]
 
-    data = data[(data['clickTime'] >= 24) & (data['clickTime'] < 29)]
+    data = data[(data['clickTime'] >= 22) & (data['clickTime'] < 29)]
     data.to_csv('../data/dup/train_xgbD{}all.csv'.format(rand),index=None)
 
     d1 = data[data['label'] == 1]

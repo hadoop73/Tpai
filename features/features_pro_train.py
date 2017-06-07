@@ -38,8 +38,15 @@ else:
     d.loc[:,'resid'] = d['residence'].apply(lambda x:int(x/100))
 
 
+
     def func(dt):
+        dt = dt.reset_index(drop=True)
         n = dt.shape[0]
+        for c in ['appID', 'creativeID', 'positionID', 'userID']:
+            dt.loc[:, c + 'red'] = 0
+            for i in range(1, n):
+                dt.loc[i, c + 'red'] = (1 if dt.iloc[i][c] == dt.iloc[i - 1][c] else 0)
+
         dt.loc[:,'rank'] = range(1,n+1)
         for c in ['appID','creativeID','positionID']:
             ids = pd.unique(dt[c])
@@ -59,15 +66,3 @@ else:
 
     d.to_csv('../data/dup/all.csv',index=None)
 
-d.loc[:,'cID'] = 0
-d.loc[(d['creativeID']==4565),'cID'] = 1
-d.loc[(d['creativeID']==376),'cID'] = 2
-
-d.loc[:,'pID'] = 0
-d.loc[(d['positionID']==2579),'pID'] = 1
-d.loc[(d['positionID']==3322),'pID'] = 2
-
-
-print d.head()
-print d.shape
-d.to_csv('../data/dup/all.csv',index=None)

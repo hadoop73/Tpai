@@ -10,38 +10,26 @@ def colDayRatio(rand=133):
     train29 = pd.read_csv('../data/dup/train.csv')
     train29.drop('conversionTime', axis=1, inplace=True)
     #train29 = train29[train29['clickTime']<310000]
-    train,valid,test = trainSample(rand=rand)
+    #train,valid,test = trainSample(rand=rand)
+    train = pd.read_csv('../data/dup/train_3p.csv')
+    valid = pd.read_csv('../data/dup/valid_3p.csv')
+    test = pd.read_csv('../data/dup/test_3p.csv')
+
     print train.shape, valid.shape, test.shape
 
     ad = pd.read_csv('../data/dup/ad.csv')
     train29 = train29.merge(ad, on='creativeID', how='left')
-    train = train.merge(ad,on='creativeID',how='left')
-    valid = valid.merge(ad, on='creativeID', how='left')
-    test = test.merge(ad, on='creativeID', how='left')
 
     user = pd.read_csv('../data/dup/user.csv')
     train29 = train29.merge(user, on='userID', how='left')
-    train = train.merge(user,on='userID',how='left')
-    valid = valid.merge(user,on='userID',how='left')
-    test = test.merge(user, on='userID', how='left')
 
 
-    train29.loc[:, 'clickTimeDay'] = train29['clickTime'].apply(lambda x: int(x / 10000 ))
-    train.loc[:, 'clickTimeDay'] = train['clickTime'].apply(lambda x: int(x / 10000))
-    valid.loc[:, 'clickTimeDay'] = valid['clickTime'].apply(lambda x: int(x / 10000))
-    test.loc[:, 'clickTimeDay'] = test['clickTime'].apply(lambda x: int(x / 10000))
 
-    train29.loc[:, 'hometown'] = train29['hometown'].apply(lambda x: int(x / 100))
-    train29.loc[:, 'residence'] = train29['residence'].apply(lambda x: int(x / 100))
+    train29.loc[:, 'day'] = train29['clickTime'].apply(lambda x: int(x / 10000 ))
 
-    train.loc[:,'hometown'] = train['hometown'].apply(lambda x:int(x/100))
-    train.loc[:,'residence'] = train['residence'].apply(lambda x:int(x/100))
+    train29.loc[:, 'home'] = train29['hometown'].apply(lambda x: int(x / 100))
+    train29.loc[:, 'resid'] = train29['residence'].apply(lambda x: int(x / 100))
 
-    valid.loc[:, 'hometown'] = valid['hometown'].apply(lambda x: int(x / 100))
-    valid.loc[:, 'residence'] = valid['residence'].apply(lambda x: int(x / 100))
-
-    test.loc[:, 'hometown'] = test['hometown'].apply(lambda x: int(x / 100))
-    test.loc[:, 'residence'] = test['residence'].apply(lambda x: int(x / 100))
 
     cols = ['creativeID','userID','adID','camgaignID','appID','appPlatform','advertiserID',
             'connectionType','telecomsOperator','gender','education','positionID',
@@ -58,15 +46,15 @@ def colDayRatio(rand=133):
     """
     # 统计平均准化率，以及点击次数，转化次数
     for col in cols:
-        d = train29[[col,'clickTimeDay', 'label']]
+        d = train29[[col,'day', 'label']]
         ts = []
-        for i in range(1,6):
+        for i in range(1,3):
             td = d.copy()
-            td.loc[:,'clickTimeDay'] = td['clickTimeDay'].apply(lambda x:x+i)
+            td.loc[:,'day'] = td['day'].apply(lambda x:x+i)
             ts.append(td)
             ds = pd.concat(ts)
             #print ds.head()
-            ds = ds.groupby([col,'clickTimeDay'],as_index=False)['label'].agg({col+"_ratio_"+str(i):np.mean,
+            ds = ds.groupby([col,'day'],as_index=False)['label'].agg({col+"_ratio_"+str(i):np.mean,
                                                                                col + "_size_" + str(i):np.size,
                                                                                col + "_sum_" + str(i):np.sum})
             ds.loc[:,col + "_size_" + str(i)] = ds[col + "_size_" + str(i)].apply(lambda x:x/i)
@@ -74,9 +62,9 @@ def colDayRatio(rand=133):
 
             ds.rename(columns={'label':col+"_ratio_"+str(i)},inplace=True)
             #train29 = train29.merge(d, on=[col,'clickTimeDay'], how='left')
-            train = train.merge(ds, on=[col,'clickTimeDay'], how='left')
-            valid = valid.merge(ds, on=[col,'clickTimeDay'], how='left')
-            test = test.merge(ds, on=[col,'clickTimeDay'], how='left')
+            train = train.merge(ds, on=[col,'day'], how='left')
+            valid = valid.merge(ds, on=[col,'day'], how='left')
+            test = test.merge(ds, on=[col,'day'], how='left')
             gc.collect()
     #print train.shape
     print train.shape,valid.shape,test.shape

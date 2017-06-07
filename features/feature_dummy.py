@@ -3,6 +3,7 @@
 import pandas as pd
 import numpy as np
 
+"""
 train = pd.read_csv('../data/pre/train.csv')
 ad = pd.read_csv('../data/dup/ad.csv')
 position = pd.read_csv('../data/dup/position.csv')
@@ -22,11 +23,17 @@ train = train.merge(position,on='positionID',how='left')
 del position
 train = train.merge(user,on='userID',how='left')
 del user
+"""
 
-cols = ['gender',]
+train = pd.read_csv('../data/dup/train_r.csv')
+valid = pd.read_csv('../data/dup/valid_r.csv')
+test = pd.read_csv('../data/dup/test_r.csv')
+
+train = pd.concat([train,valid,test])
+
 
 d = pd.get_dummies(train['gender'],prefix='gender')
-train.drop('gender',axis=1,inplace=True)
+#train.drop('gender',axis=1,inplace=True)
 train = train.join(d)
 
 def ageFun(x):

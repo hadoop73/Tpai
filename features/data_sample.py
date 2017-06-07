@@ -4,6 +4,7 @@
 
 import pandas as pd
 import argparse
+from sklearn.model_selection import train_test_split
 
 """
 parser = argparse.ArgumentParser()
@@ -20,51 +21,27 @@ print args
    21 表示采样数据的后缀，如 train21.csv valid21.csv 为采样训练数据集和验证集
    train21all.csv 表示验证数据集之前的所有数据，也就是 29 日之前的所有数据
 """
-def GetTrainValidDatas():
-    train = pd.read_csv('./data/dup/train.csv')
-    # 采样验证数据集 valid21.csv
-    valid = train[(train['clickTime'] >= 29 * 10000) & (train['clickTime'] < 29 * 10000 + 10000)]
-    valid.to_csv('./data/dup/valid{}.csv'.format(21), index=None)
-    print valid.head()
-    # 验证数据集之前的所有数据 train21all.csv
-    t = train[(train['clickTime']<args['days'][-2]*10000+10000)]
-    t.ix[(train['clickTime']>=args['days'][-2]*10000),'label'] = -1
-    t.to_csv('./data/dup/train{}all.csv'.format(args['days'][-1]),index=None)
-    print t.tail()
-    print "train{}all size:".format(args['days'][-1]), t.shape
+train = pd.read_csv('../data/dup/all_sum.csv')
+y_train = train['label']
+train.drop('label',axis=1,inplace=True)
 
-def GetTrainVTestDatas():
-    train = pd.read_csv('../data/dup/train.csv')
-    train.drop('conversionTime',axis=1,inplace=True)
-    #  test.csv
-    test = pd.read_csv('../data/dup/test.csv')
-    test.drop('instanceID',axis=1,inplace=True)
-
-    t = train[(train['clickTime']<30*10000)]
-    t = pd.concat([t,test])
-    t.to_csv('../data/dup/train{}test.csv'.format(21),index=None)
-    print t.tail()
-    print "train{}test size:".format(21), t.shape
+train,valid,yt,yv = train_test_split(train,y_train,test_size=0.3,random_state=133)
 
 
-def GetTrainValidTestDatas():
-    train = pd.read_csv('./data/dup/train.csv')
-    # 采样验证数据集 valid21.csv
-    valid = train[(train['clickTime'] >= 29 * 10000) & (train['clickTime'] < 29 * 10000 + 10000)]
-    valid.to_csv('./data/dup/valid{}.csv'.format(21), index=None)
-    print valid.head()
-    # 验证数据集之前的所有数据 train21all.csv
-    t = train[(train['clickTime']<29*10000+10000)]
-    t.ix[(train['clickTime']>=29*10000),'label'] = -1
-    t.to_csv('./data/dup/train{}all.csv'.format(21),index=None)
+valid.loc[:,'label'] = yv
+print 1.0*valid[valid['label']==0].shape[0]/valid[valid['label']==1].shape[0]
+valid.to_csv('../data/dup/valid_r2.csv',index=None)
 
-    test = pd.read_csv('./data/dup/test.csv')
-    test.drop('instanceID', axis=1, inplace=True)
-    print t.tail()
-    print "train{}all size:".format(21), t.shape
+del valid
 
-#GetTrainValidDatas()
-GetTrainVTestDatas()
+train,xxx,yt,xxy = train_test_split(train,yt,test_size=0.4,random_state=133)
 
-#GetTrainValidTestDatas()
+del xxx
 
+train.loc[:,'label'] = yt
+print 1.0*train[train['label']==0].shape[0]/train[train['label']==1].shape[0]
+
+train.to_csv('../data/dup/train_r2.csv',index=None)
+#train.to_csv('../data/dup/train_ratio.csv',index=None)
+print train.head()
+print train.shape

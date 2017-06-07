@@ -77,12 +77,12 @@ print cols
 
 from multiprocessing import Pool
 
-"""
+
 pool = Pool(8)
 pool.map(writeCols,cols)
 pool.close()
 pool.join()
-"""
+
 
 
 def delPart(dt):
@@ -156,7 +156,7 @@ print 1.0*train[train['label']==0].shape[0]/train[train['label']==1].shape[0]
 y_train = train['label']
 train.drop('label',axis=1,inplace=True)
 
-train,valid,yt,yv = train_test_split(train,y_train,test_size=0.3,random_state=42)
+train,valid,yt,yv = train_test_split(train,y_train,test_size=0.3,random_state=133)
 
 
 valid.loc[:,'label'] = yv
@@ -165,7 +165,7 @@ valid.to_csv('../data/dup/valid_r.csv',index=None)
 
 del valid
 
-train,xxx,yt,xxy = train_test_split(train,yt,test_size=0.4,random_state=42)
+train,xxx,yt,xxy = train_test_split(train,yt,test_size=0.4,random_state=133)
 
 del xxx
 

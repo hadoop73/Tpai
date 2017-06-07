@@ -54,7 +54,7 @@ def fmDatas(f):
 #fmDatas('train')
 
 def fmdt(f='train'):
-    train = pd.read_csv('../data/dup/{}_xgb11U.csv'.format(f))
+    train = pd.read_csv('../data/dup/{}_xgbD133.csv'.format(f))
     train.fillna(0, inplace=True)
     y = train['label']
     train.drop('label', axis=1, inplace=True)
@@ -76,8 +76,8 @@ def fmdt(f='train'):
     tmp = pd.DataFrame({'label': y})
     d = tmp.join(train)
     print d.head()
-    d = shuffle(d)
-    print d.head()
+    #d = shuffle(d)
+    #print d.head()
     #d.to_csv('../data/dup/{}.tmp.dense.fm'.format(f), index=None, header=None, sep=' ')
 
     d.to_csv('../data/dup/{}.tmp_rand.dense.fm'.format(f), index=None, header=None, sep=' ')
@@ -93,8 +93,8 @@ for f in ['valid','train','test']:
 """
 def fmFormate():
     p = re.compile('\s+')
-    for f in ['train','valid']:
-        with open('../data/dup/{}.tmp_rand.fm'.format(f), mode='r') as fd, \
+    for f in ['train','valid','test']:
+        with open('../data/dup/{}.tmp_rand.dense.fm'.format(f), mode='r') as fd, \
                     open('../data/dup/{}.rand.fm'.format(f), mode='w') as fx:
                 for sd in fd.readlines():
                     #sd = fd.readline()
@@ -103,15 +103,53 @@ def fmFormate():
                     #ssx = p.sub(' ', sx)
 
                     fx.write(ssd.strip()+'\n')
-    with open('../data/dup/test.tmp.dense.fm', mode='r') as fd, \
-            open('../data/dup/test.rand.fm'.format(f), mode='w') as fx:
-        for sd in fd.readlines():
-            # sd = fd.readline()
-            ssd = p.sub(' ', sd)
-            # sx = fx.readline()
-            # ssx = p.sub(' ', sx)
 
-            fx.write(ssd.strip() + '\n')
+
+def xx():
+    import gc
+    for f in ['train','valid','test']:
+        #fmdt(f)
+        train = pd.read_csv('../data/dup/{}_xgbD133.csv'.format(f))
+        train.fillna(0, inplace=True)
+        y = train['label']
+        train.drop('label', axis=1, inplace=True)
+
+        # 类别特征处理
+        cols = ['adID', 'camgaignID', 'appID', 'appPlatform', 'advertiserID', 'creativeID', 'sitesetID',
+                'positionType', 'positionID', 'telecomsOperator', 'connectionType', 'gender', 'userID',
+                'education', 'marriagedStatus', 'haveBaby', 'hometown', 'residence', 'liveState']
+        cols = [col for col in cols if col in train.columns]
+        # for col in cols:
+        #    t = pd.get_dummies(d[col], prefix=col)
+        #    d = d.join(t)
+        train.drop(cols, axis=1, inplace=True)
+        train.columns = range(train.shape[1])
+
+        def funCol(col):
+            r = {}
+            r[col] = train[col].apply(lambda x: '{0}:{1}'.format(col, x) if x != None and x != 0 else "")
+            return r
+
+
+        from multiprocessing import Pool
+        pool = Pool(4)
+        rs = pool.map(funCol,train.columns)
+        #del train
+        ds = {}
+        for r in rs:
+            ds.update(r)
+        del rs
+        train = pd.DataFrame(ds)
+        tmp = pd.DataFrame({'label': y})
+        d = tmp.join(train)
+        print d.head()
+        #d = shuffle(d)
+        #print d.head()
+        #d.to_csv('../data/dup/{}.tmp.dense.fm'.format(f), index=None, header=None, sep=' ')
+        d.to_csv('../data/dup/{}.tmp_rand.dense.fm'.format(f), index=None, header=None, sep=' ')
+        #del train,ds,d
+        gc.collect()
+
 
 fmFormate()
 

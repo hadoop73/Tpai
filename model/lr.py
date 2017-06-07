@@ -15,28 +15,31 @@ def logloss(act, pred):
 
 rand = 1023
 
-atrain = pd.read_csv('../data/dup/train_xgb11U.csv'.format(rand))
+atrain = pd.read_csv('../data/dup/train_3p.csv'.format(rand))
 #atrain = pd.read_csv('../data/dup/train_xgbASample.csv')
 atrain.fillna(0,inplace=True)
-avalid = pd.read_csv('../data/dup/valid_xgb11U.csv'.format(rand))
-test = pd.read_csv('../data/dup/test_xgb11U.csv'.format(rand))
+avalid = pd.read_csv('../data/dup/valid_3p.csv'.format(rand))
+test = pd.read_csv('../data/dup/test_3p.csv'.format(rand))
 
-mx = (atrain['age'].max()>avalid['age'].max()) and atrain['age'].max() or avalid['age'].max()
+cols = ['home', 'hometown', 'residence', 'resid', 'positionID',
+        'creativeID', 'adID', 'camgaignID', 'advertiserID', 'appID']
 
-atrain.loc[:,'age'] = atrain['age'].apply(lambda x:1.0*x/mx)
-avalid.loc[:,'age'] = avalid['age'].apply(lambda x:1.0*x/mx)
-test.loc[:,'age'] = test['age'].apply(lambda x:1.0*x/mx)
+cols2 = ['education', 'haveBaby', 'positionType', 'connectionType']
 
+cols3 = ['gender', 'marriageStatus', 'sitesetID', 'appPlatform', 'telecomsOperator']
+
+cols += cols2 + cols3 + ['label']
+cols = [c for c in atrain.columns if c in cols]
 
 trainy = atrain['label']
-atrain.drop(['userID','label','creativeID','positionID','adID','appID','appPlatform','clickTime'],axis=1,inplace=True)
+atrain.drop(cols,axis=1,inplace=True)
 
 avalid.fillna(0,inplace=True)
 
 validy = avalid['label']
-avalid.drop(['userID','label','creativeID','positionID','adID','appID','appPlatform','clickTime'],axis=1,inplace=True)
+avalid.drop(cols,axis=1,inplace=True)
 test.fillna(0,inplace=True)
-test.drop(['userID','label','creativeID','positionID','adID','appID','appPlatform','clickTime'],axis=1,inplace=True)
+test.drop(cols,axis=1,inplace=True)
 
 lr = LogisticRegression()
 lr.fit(atrain,trainy)
